@@ -2,14 +2,12 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
-    system_program,
     sysvar,
 };
 
 const SYSTEM_PROGRAM_ID: Pubkey = solana_program::pubkey!("11111111111111111111111111111111");
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
-#[borsh(use_discriminant = true)]
 pub enum BridgeInstruction {
     Initialize {
         admin: Pubkey,

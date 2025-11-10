@@ -9,10 +9,10 @@ pub use instruction::BridgeInstruction;
 pub use processor::process_instruction;
 pub use state::{BridgeConfig, BridgeStatus, UserBridgeState};
 
-#[cfg(not(feature = "no-entrypoint"))]
+#[cfg(all(target_arch = "bpf", not(feature = "no-entrypoint")))]
 use solana_program::entrypoint;
 
-#[cfg(not(feature = "no-entrypoint"))]
+#[cfg(all(target_arch = "bpf", not(feature = "no-entrypoint")))]
 entrypoint!(process_instruction);
 
-solana_program::declare_id!("BridgeVau1t11111111111111111111111111111111");
+solana_program::declare_id!("7DazfS5hDxNJMJcxs1uKk3yoob7cbPLBFMXA3iRotjRH");

@@ -96,7 +96,7 @@ fn process_initialize(
     let bridge_config_account = next_account_info(account_info_iter)?;
     let vault_pda_account = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
-    let rent_sysvar = next_account_info(account_info_iter)?;
+    let _rent_sysvar = next_account_info(account_info_iter)?;
     let rent = Rent::get()?;
 
     if !admin_account.is_signer {
@@ -196,8 +196,8 @@ fn process_lock_tokens(
     let token_mint_account = next_account_info(account_info_iter)?;
     let token_program = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
-    let rent_sysvar = next_account_info(account_info_iter)?;
-    let clock_sysvar = next_account_info(account_info_iter)?;
+    let _rent_sysvar = next_account_info(account_info_iter)?;
+    let _clock_sysvar = next_account_info(account_info_iter)?;
 
     let rent = Rent::get()?;
     let clock = Clock::get()?;
