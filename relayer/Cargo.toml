@@ -1,0 +1,42 @@
+[package]
+name = "relayer"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+tokio = { workspace = true, features = ["full"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# Database
+sqlx = { version = "0.8", features = ["runtime-tokio-native-tls", "sqlite", "migrate"] }
+
+# Blockchain clients
+solana-client = "=1.17.0"
+solana-sdk = "=1.17.0"
+solana-transaction-status = "=1.17.0"
+anchor-lang = "0.29.0"
+
+# Ethereum (commented out to avoid conflicts with Solana - will implement separately)
+# ethers = "2.0"
+
+# Config
+dotenv = "0.15"
+config = "0.13"
+toml = "0.8"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Crypto
+secp256k1 = "0.28"
+sha2 = "0.10"
+hex = "0.4"
+
+# Utilities
+futures = "0.3"
+async-trait = "0.1"
+chrono = "0.4"

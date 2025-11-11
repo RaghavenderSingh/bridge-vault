@@ -13,6 +13,8 @@ pub enum BridgeInstruction {
         admin: Pubkey,
         relayer_authority: Pubkey,
         fee_basis_points: u16,
+        validators: Vec<Pubkey>,
+        validator_threshold: u8,
     },
     LockTokens {
         amount: u64,
@@ -54,6 +56,8 @@ impl BridgeInstruction {
         vault_pda: &Pubkey,
         relayer_authority: &Pubkey,
         fee_basis_points: u16,
+        validators: Vec<Pubkey>,
+        validator_threshold: u8,
     ) -> Instruction {
         let accounts = vec![
             AccountMeta::new(*admin, true),
@@ -70,6 +74,45 @@ impl BridgeInstruction {
                 admin: *admin,
                 relayer_authority: *relayer_authority,
                 fee_basis_points,
+                validators,
+                validator_threshold,
+            }
+            .pack(),
+        }
+    }
+
+    pub fn create_lock_tokens_instruction(
+        program_id: &Pubkey,
+        user: &Pubkey,
+        user_token_account: &Pubkey,
+        vault_token_account: &Pubkey,
+        user_bridge_state: &Pubkey,
+        bridge_config: &Pubkey,
+        token_mint: &Pubkey,
+        amount: u64,
+        destination_chain: u8,
+        destination_address: [u8; 32],
+    ) -> Instruction {
+        let accounts = vec![
+            AccountMeta::new(*user, true),
+            AccountMeta::new(*user_token_account, false),
+            AccountMeta::new(*vault_token_account, false),
+            AccountMeta::new(*user_bridge_state, false),
+            AccountMeta::new(*bridge_config, false),
+            AccountMeta::new_readonly(*token_mint, false),
+            AccountMeta::new_readonly(spl_token::id(), false),
+            AccountMeta::new_readonly(SYSTEM_PROGRAM_ID, false),
+            AccountMeta::new_readonly(sysvar::rent::id(), false),
+            AccountMeta::new_readonly(sysvar::clock::id(), false),
+        ];
+
+        Instruction {
+            program_id: *program_id,
+            accounts,
+            data: Self::LockTokens {
+                amount,
+                destination_chain,
+                destination_address,
             }
             .pack(),
         }
@@ -175,15 +218,20 @@ mod tests {
             admin: Pubkey::new_unique(),
             relayer_authority: Pubkey::new_unique(),
             fee_basis_points: 50,
+            validators: vec![Pubkey::new_unique(), Pubkey::new_unique()],
+            validator_threshold: 2,
         };
 
         let packed = init.pack();
         let unpacked = BridgeInstruction::unpack(&packed).unwrap();
         match unpacked {
             BridgeInstruction::Initialize {
-                fee_basis_points, ..
+                fee_basis_points,
+                validator_threshold,
+                ..
             } => {
                 assert_eq!(fee_basis_points, 50);
+                assert_eq!(validator_threshold, 2);
             }
             _ => panic!("Wrong instruction type"),
         }

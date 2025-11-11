@@ -1,0 +1,21 @@
+[package]
+name = "bridge-vault"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+borsh = "0.9.3"
+solana-program = "=1.17.0"
+spl-token = "=3.5.0"
+thiserror = "1.0"
+ed25519-dalek = "1.0.1"
+sha2 = "0.10"
+getrandom = { version = "0.1.16", features = ["dummy"] }
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+no-entrypoint = []
+default = []
+test-sbf = []

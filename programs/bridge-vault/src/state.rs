@@ -18,11 +18,14 @@ pub struct BridgeConfig {
     pub is_paused: bool,
     pub total_locked: u64,
     pub nonce: u64,
+    pub validators: Vec<Pubkey>,
+    pub validator_threshold: u8,
 }
 
 impl BridgeConfig {
-    pub const LEN: usize = 92;
+    pub const LEN: usize = 256;
     pub const DISCRIMINATOR: &'static [u8] = b"bridgecfg";
+    pub const MAX_VALIDATORS: usize = 5;
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
@@ -87,10 +90,14 @@ mod tests {
             is_paused: false,
             total_locked: 1_000_000_000,
             nonce: 42,
+            validators: vec![Pubkey::new_unique(), Pubkey::new_unique(), Pubkey::new_unique()],
+            validator_threshold: 2,
         };
         let serialized = borsh::to_vec(&config).unwrap();
         let deserialized = BridgeConfig::try_from_slice(&serialized).unwrap();
         assert_eq!(config.admin, deserialized.admin);
         assert_eq!(config.nonce, deserialized.nonce);
+        assert_eq!(config.validators.len(), 3);
+        assert_eq!(config.validator_threshold, 2);
     }
 }

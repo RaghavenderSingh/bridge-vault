@@ -13,6 +13,7 @@ use solana_program::{
     sysvar::Sysvar,
 };
 use spl_token::state::Account as TokenAccount;
+use sha2::{Sha256, Digest};
 
 const SYSTEM_PROGRAM_ID: Pubkey = solana_program::pubkey!("11111111111111111111111111111111");
 
@@ -36,6 +37,8 @@ pub fn process_instruction(
             admin,
             relayer_authority,
             fee_basis_points,
+            validators,
+            validator_threshold,
         } => {
             msg!("Instruction: Initialize");
             process_initialize(
@@ -44,6 +47,8 @@ pub fn process_instruction(
                 admin,
                 relayer_authority,
                 fee_basis_points,
+                validators,
+                validator_threshold,
             )
         }
         BridgeInstruction::LockTokens {
@@ -89,6 +94,8 @@ fn process_initialize(
     admin: Pubkey,
     relayer_authority: Pubkey,
     fee_basis_points: u16,
+    validators: Vec<Pubkey>,
+    validator_threshold: u8,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
@@ -117,6 +124,16 @@ fn process_initialize(
     if fee_basis_points > 10000 {
         msg!("Fee basis points must be <= 10000 (100%)");
         return Err(BridgeError::InvalidFee.into());
+    }
+
+    if validators.is_empty() || validators.len() > crate::state::BridgeConfig::MAX_VALIDATORS {
+        msg!("Invalid number of validators (must be 1-5)");
+        return Err(ProgramError::InvalidArgument.into());
+    }
+
+    if validator_threshold == 0 || validator_threshold as usize > validators.len() {
+        msg!("Invalid validator threshold");
+        return Err(ProgramError::InvalidArgument.into());
     }
 
     let (vault_pda, vault_bump) =
@@ -161,6 +178,8 @@ fn process_initialize(
         is_paused: false,
         total_locked: 0,
         nonce: 0,
+        validators,
+        validator_threshold,
     };
 
     bridge_config
@@ -449,19 +468,44 @@ fn process_unlock_tokens(
         return Err(BridgeError::InvalidPDA.into());
     }
 
-    const MIN_SIGNATURES: usize = 2;
-
-    if signatures.len() < MIN_SIGNATURES {
+    if signatures.len() < bridge_config.validator_threshold as usize {
         msg!(
             "Insufficient signatures. Required: {}, Got: {}",
-            MIN_SIGNATURES,
+            bridge_config.validator_threshold,
             signatures.len()
         );
         return Err(BridgeError::ThresholdNotMet.into());
     }
 
+    let message_data = create_unlock_message(
+        nonce,
+        user_account.key,
+        user_bridge_state.locked_amount,
+    );
+
+    let mut valid_signature_count = 0;
+    for (sig_idx, signature) in signatures.iter().enumerate() {
+        for validator_pubkey in &bridge_config.validators {
+            if verify_ed25519_signature(&message_data, signature, validator_pubkey.as_ref()) {
+                msg!("Valid signature {} from validator {}", sig_idx, validator_pubkey);
+                valid_signature_count += 1;
+                break;
+            }
+        }
+    }
+
+    if valid_signature_count < bridge_config.validator_threshold as usize {
+        msg!(
+            "Signature verification failed. Valid: {}, Required: {}",
+            valid_signature_count,
+            bridge_config.validator_threshold
+        );
+        return Err(BridgeError::ThresholdNotMet.into());
+    }
+
     msg!(
-        "Signature verification passed: {} signatures",
+        "Signature verification passed: {}/{} valid signatures",
+        valid_signature_count,
         signatures.len()
     );
 
@@ -677,4 +721,41 @@ fn process_unpause(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResu
     msg!("Lock operations are now enabled");
 
     Ok(())
+}
+
+fn create_unlock_message(nonce: u64, user: &Pubkey, amount: u64) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(b"unlock:");
+    hasher.update(nonce.to_le_bytes());
+    hasher.update(user.as_ref());
+    hasher.update(amount.to_le_bytes());
+    let result = hasher.finalize();
+    let mut message = [0u8; 32];
+    message.copy_from_slice(&result);
+    message
+}
+
+fn verify_ed25519_signature(message: &[u8; 32], signature: &[u8; 64], pubkey: &[u8]) -> bool {
+    if pubkey.len() != 32 {
+        return false;
+    }
+
+    let pubkey_bytes = match <[u8; 32]>::try_from(pubkey) {
+        Ok(bytes) => bytes,
+        Err(_) => return false,
+    };
+
+    use ed25519_dalek::{PublicKey, Signature, Verifier};
+
+    let public_key = match PublicKey::from_bytes(&pubkey_bytes) {
+        Ok(pk) => pk,
+        Err(_) => return false,
+    };
+
+    let sig = match Signature::from_bytes(signature) {
+        Ok(s) => s,
+        Err(_) => return false,
+    };
+
+    public_key.verify(message, &sig).is_ok()
 }
