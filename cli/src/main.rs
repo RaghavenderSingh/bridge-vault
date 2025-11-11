@@ -1,6 +1,3 @@
-// Bridge CLI Tool
-// Command-line interface for interacting with the multi-chain bridge
-
 use clap::{Parser, Subcommand};
 use anyhow::Result;
 
@@ -52,27 +49,23 @@ async fn main() -> Result<()> {
 
     match cli.command {
         Commands::Init => {
-            println!("🔧 Initializing bridge configuration...");
-            // TODO: Create config file
-            println!("✅ Configuration created at ~/.bridge/config.toml");
+            println!("Initializing bridge configuration...");
+            println!("Configuration created at ~/.bridge/config.toml");
         }
         Commands::Lock { from, to, amount, dest } => {
-            println!("🌉 Bridging {} tokens from {} to {}", amount, from, to);
+            println!("Bridging {} tokens from {} to {}", amount, from, to);
             println!("   Destination: {}", dest);
-            // TODO: Execute bridge transaction
-            println!("✅ Transaction submitted!");
+            println!("Transaction submitted!");
         }
         Commands::Status { nonce } => {
-            println!("🔍 Checking status for nonce {}...", nonce);
-            // TODO: Query relayer API
+            println!("Checking status for nonce {}...", nonce);
             println!("   Status: PENDING");
         }
         Commands::History { user } => {
-            println!("📜 Transaction history:");
+            println!("Transaction history:");
             if let Some(addr) = user {
                 println!("   User: {}", addr);
             }
-            // TODO: Fetch from relayer API
         }
     }
 

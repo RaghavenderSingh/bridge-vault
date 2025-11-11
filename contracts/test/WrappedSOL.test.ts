@@ -127,7 +127,6 @@ describe("WrappedSOL", function () {
   describe("Burning", function () {
     beforeEach(async function () {
       await wrappedSOL.setBridge(bridge.address);
-      // Mint some tokens first
       const amount = ethers.parseEther("100");
       await wrappedSOL.connect(bridge).mint(user.address, amount);
     });
@@ -172,7 +171,6 @@ describe("WrappedSOL", function () {
   describe("ERC20 Functionality", function () {
     beforeEach(async function () {
       await wrappedSOL.setBridge(bridge.address);
-      // Mint tokens to user
       const amount = ethers.parseEther("100");
       await wrappedSOL.connect(bridge).mint(user.address, amount);
     });

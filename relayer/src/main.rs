@@ -1,6 +1,3 @@
-// Relayer Service - Main Entry Point
-// Monitors Solana, Ethereum, and Sui for bridge events
-
 mod config;
 mod db;
 mod error;
@@ -14,7 +11,6 @@ use tracing::{error, info, warn};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Initialize logging
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -22,20 +18,17 @@ async fn main() -> Result<()> {
         )
         .init();
 
-    info!("🌉 Multi-Chain Bridge Relayer starting...");
+    info!("Multi-Chain Bridge Relayer starting...");
     info!("Version: {}", env!("CARGO_PKG_VERSION"));
 
-    // Load configuration
     info!("Loading configuration...");
     let config = Config::from_env()?;
-    info!("✅ Configuration loaded");
+    info!("Configuration loaded");
 
-    // Connect to database
     info!("Connecting to database...");
     let db = Database::new(&config.database.url, config.database.max_connections).await?;
-    info!("✅ Database connected");
+    info!("Database connected");
 
-    // Display configuration info
     info!("Solana RPC: {}", config.solana.rpc_url);
     info!("Ethereum RPC: {}", config.ethereum.rpc_url);
     info!(
@@ -44,10 +37,9 @@ async fn main() -> Result<()> {
     );
     info!("Validators: {}", config.validators.len());
 
-    // Get initial stats
     match db.get_stats().await {
         Ok(stats) => {
-            info!("📊 Transaction Statistics:");
+            info!("Transaction Statistics:");
             info!("  Total: {}", stats.total);
             info!("  Pending: {}", stats.pending);
             info!("  Signatures Collected: {}", stats.signatures_collected);
@@ -58,44 +50,31 @@ async fn main() -> Result<()> {
         Err(e) => warn!("Could not fetch stats: {}", e),
     }
 
-    // Create shutdown signal
     let shutdown = tokio::signal::ctrl_c();
 
-    info!("✅ Relayer is running!");
+    info!("Relayer is running!");
     info!("");
-    info!("📡 Monitoring chains:");
-    info!("  • Solana:   {}", config.solana.rpc_url);
-    info!("  • Ethereum: {}", config.ethereum.rpc_url);
+    info!("Monitoring chains:");
+    info!("  Solana:   {}", config.solana.rpc_url);
+    info!("  Ethereum: {}", config.ethereum.rpc_url);
     info!("");
     info!("Press Ctrl+C to stop");
 
-    // Main event loop
     let mut tick = interval(Duration::from_millis(config.relayer.poll_interval_ms));
 
     tokio::select! {
         _ = shutdown => {
-            info!("👋 Shutdown signal received...");
+            info!("Shutdown signal received...");
         }
         _ = async {
             loop {
                 tick.tick().await;
 
-                // In a full implementation, this would:
-                // 1. Check for new events on Solana
-                // 2. Check for new events on Ethereum
-                // 3. Process pending transactions
-                // 4. Collect validator signatures
-                // 5. Submit transactions to destination chains
-
-                // For now, just show we're alive
                 match db.get_pending_transactions().await {
                     Ok(pending) if !pending.is_empty() => {
-                        info!("⏳ Processing {} pending transactions", pending.len());
-                        // TODO: Process each pending transaction
+                        info!("Processing {} pending transactions", pending.len());
                     }
-                    Ok(_) => {
-                        // No pending transactions
-                    }
+                    Ok(_) => {}
                     Err(e) => {
                         error!("Error fetching pending transactions: {}", e);
                     }
@@ -104,9 +83,8 @@ async fn main() -> Result<()> {
         } => {}
     }
 
-    // Cleanup
     info!("Performing cleanup...");
-    info!("✅ Relayer stopped gracefully");
+    info!("Relayer stopped gracefully");
 
     Ok(())
 }

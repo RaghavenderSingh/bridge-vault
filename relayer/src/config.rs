@@ -114,7 +114,6 @@ impl Config {
                     .unwrap_or(10),
             },
             validators: vec![
-                // Default validators (should be configured via env)
                 ValidatorConfig {
                     name: "Validator1".to_string(),
                     eth_address: std::env::var("VALIDATOR1_ETH_ADDRESS").unwrap_or_default(),

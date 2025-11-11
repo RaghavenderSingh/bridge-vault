@@ -95,10 +95,8 @@ describe("ValidatorRegistry", function () {
     });
 
     it("Should reject removing validator if it breaks threshold", async function () {
-      // Remove one validator first (3 -> 2)
       await validatorRegistry.removeValidator(validator3.address);
 
-      // Try to remove another (would make it 1, below threshold of 2)
       await expect(validatorRegistry.removeValidator(validator2.address)).to.be.revertedWith(
         "Would break threshold"
       );
@@ -209,7 +207,6 @@ describe("ValidatorRegistry", function () {
 
       const sig1 = await validator1.signMessage(ethers.getBytes(message));
 
-      // Same signature twice
       const isValid = await validatorRegistry.verifySignatures(message, [sig1, sig1]);
       expect(isValid).to.be.false;
     });
@@ -223,10 +220,8 @@ describe("ValidatorRegistry", function () {
       const sig1 = await validator1.signMessage(ethers.getBytes(message));
       const sig3 = await validator3.signMessage(ethers.getBytes(message));
 
-      // Remove validator3
       await validatorRegistry.removeValidator(validator3.address);
 
-      // Signature from removed validator should be invalid
       const isValid = await validatorRegistry.verifySignatures(message, [sig1, sig3]);
       expect(isValid).to.be.false;
     });

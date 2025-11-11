@@ -29,8 +29,6 @@ impl Database {
     }
 
     async fn run_migrations(&self) -> Result<()> {
-        info!("Running database migrations...");
-
         sqlx::query(
             r#"
             CREATE TABLE IF NOT EXISTS relayer_transactions (
@@ -65,11 +63,9 @@ impl Database {
         .execute(&self.pool)
         .await?;
 
-        info!("✅ Database migrations completed");
         Ok(())
     }
 
-    /// Create a new transaction record
     pub async fn create_transaction(
         &self,
         nonce: u64,
@@ -104,7 +100,6 @@ impl Database {
         Ok(result.last_insert_rowid())
     }
 
-    /// Get transaction by nonce
     pub async fn get_transaction_by_nonce(&self, nonce: u64) -> Result<Option<RelayerTransaction>> {
         let tx = sqlx::query_as::<_, RelayerTransaction>(
             "SELECT * FROM relayer_transactions WHERE nonce = ?",
@@ -116,7 +111,6 @@ impl Database {
         Ok(tx)
     }
 
-    /// Get transaction by source transaction hash
     pub async fn get_transaction_by_hash(&self, tx_hash: &str) -> Result<Option<RelayerTransaction>> {
         let tx = sqlx::query_as::<_, RelayerTransaction>(
             "SELECT * FROM relayer_transactions WHERE from_tx_hash = ?",
@@ -128,7 +122,6 @@ impl Database {
         Ok(tx)
     }
 
-    /// Update transaction status
     pub async fn update_transaction_status(
         &self,
         id: i64,
@@ -155,7 +148,6 @@ impl Database {
         Ok(())
     }
 
-    /// Update transaction signatures
     pub async fn update_signatures(&self, id: i64, signatures: &str) -> Result<()> {
         let now = Utc::now();
         sqlx::query(
@@ -175,7 +167,6 @@ impl Database {
         Ok(())
     }
 
-    /// Get pending transactions
     pub async fn get_pending_transactions(&self) -> Result<Vec<RelayerTransaction>> {
         let txs = sqlx::query_as::<_, RelayerTransaction>(
             "SELECT * FROM relayer_transactions WHERE status = ? OR status = ? ORDER BY created_at ASC",
@@ -188,7 +179,6 @@ impl Database {
         Ok(txs)
     }
 
-    /// Get transactions by status
     pub async fn get_transactions_by_status(
         &self,
         status: TransactionStatus,
@@ -203,7 +193,6 @@ impl Database {
         Ok(txs)
     }
 
-    /// Check if nonce has been processed
     pub async fn is_nonce_processed(&self, nonce: u64) -> Result<bool> {
         let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM relayer_transactions WHERE nonce = ?")
             .bind(nonce as i64)
@@ -213,7 +202,6 @@ impl Database {
         Ok(count.0 > 0)
     }
 
-    /// Get transaction statistics
     pub async fn get_stats(&self) -> Result<TransactionStats> {
         let stats = sqlx::query_as::<_, TransactionStats>(
             r#"

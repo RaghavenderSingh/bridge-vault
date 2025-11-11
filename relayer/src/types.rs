@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 
-/// Chain identifier
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "TEXT")]
 pub enum Chain {
@@ -20,10 +19,8 @@ impl std::fmt::Display for Chain {
     }
 }
 
-/// Bridge event types
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BridgeEvent {
-    /// Tokens locked on source chain (ready to mint on destination)
     TokensLocked {
         from_chain: Chain,
         to_chain: Chain,
@@ -33,7 +30,6 @@ pub enum BridgeEvent {
         nonce: u64,
         tx_hash: String,
     },
-    /// Tokens burned on destination chain (ready to unlock on source)
     TokensBurned {
         from_chain: Chain,
         to_chain: Chain,
@@ -75,7 +71,6 @@ impl BridgeEvent {
     }
 }
 
-/// Transaction status in the relayer
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "TEXT")]
 pub enum TransactionStatus {
@@ -98,7 +93,6 @@ impl std::fmt::Display for TransactionStatus {
     }
 }
 
-/// Relayer transaction record
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct RelayerTransaction {
     pub id: i64,
@@ -111,13 +105,12 @@ pub struct RelayerTransaction {
     pub recipient: String,
     pub amount: i64,
     pub status: TransactionStatus,
-    pub signatures: Option<String>, // JSON array of signatures
+    pub signatures: Option<String>,
     pub error_message: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
-/// Validator signature
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidatorSignature {
     pub validator_address: String,
