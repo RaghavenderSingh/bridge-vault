@@ -736,26 +736,57 @@ fn create_unlock_message(nonce: u64, user: &Pubkey, amount: u64) -> [u8; 32] {
 }
 
 fn verify_ed25519_signature(message: &[u8; 32], signature: &[u8; 64], pubkey: &[u8]) -> bool {
+    // Validate pubkey length
     if pubkey.len() != 32 {
+        msg!("Invalid pubkey length: {}", pubkey.len());
         return false;
     }
 
+    // Convert to fixed-size array
     let pubkey_bytes = match <[u8; 32]>::try_from(pubkey) {
         Ok(bytes) => bytes,
-        Err(_) => return false,
+        Err(_) => {
+            msg!("Failed to convert pubkey to [u8; 32]");
+            return false;
+        }
     };
 
+    // Validate signature length (already validated by parameter type, but double-check)
+    if signature.len() != 64 {
+        msg!("Invalid signature length: {}", signature.len());
+        return false;
+    }
+
+    // Use ed25519-dalek for signature verification
     use ed25519_dalek::{PublicKey, Signature, Verifier};
 
+    // Create PublicKey from bytes
     let public_key = match PublicKey::from_bytes(&pubkey_bytes) {
         Ok(pk) => pk,
-        Err(_) => return false,
+        Err(e) => {
+            msg!("Invalid public key: {:?}", e);
+            return false;
+        }
     };
 
+    // Create Signature from bytes
     let sig = match Signature::from_bytes(signature) {
         Ok(s) => s,
-        Err(_) => return false,
+        Err(e) => {
+            msg!("Invalid signature format: {:?}", e);
+            return false;
+        }
     };
 
-    public_key.verify(message, &sig).is_ok()
+    // Verify the signature
+    match public_key.verify(message, &sig) {
+        Ok(()) => {
+            msg!("Signature verification successful");
+            true
+        }
+        Err(e) => {
+            msg!("Signature verification failed: {:?}", e);
+            false
+        }
+    }
 }

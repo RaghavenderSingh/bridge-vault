@@ -3,6 +3,7 @@ use solana_program::pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]
+#[borsh(use_discriminant = true)]
 pub enum BridgeStatus {
     Pending = 0,
     Completed = 1,

@@ -5,6 +5,7 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
 use std::str::FromStr;
 use tracing::{info, warn};
 
+#[derive(Clone)]
 pub struct Database {
     pool: SqlitePool,
 }

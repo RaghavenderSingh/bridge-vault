@@ -3,7 +3,10 @@
 **/target/
 **/*.rs.bk
 *.pdb
-Cargo.lock
+
+# Keep Cargo.lock for binaries, ignore for libraries
+# Uncomment if this is a library:
+# Cargo.lock
 
 # Node.js
 node_modules/
@@ -13,14 +16,62 @@ yarn-error.log*
 package-lock.json
 .pnpm-debug.log*
 
-# Logs
-*.log
-logs/
+# Next.js (app/)
+.next/
+.vercel/
+.turbo/
+*.tsbuildinfo
 
-# Environment variables
+# Solana / Anchor
+.anchor/
+test-ledger/
+.solana/
+**/.anchor/
+**/test-ledger/
+
+# Solana keys (CRITICAL - never commit private keys)
+*.keypair
+*-keypair.json
+*.key
+keys/
+wallets/
+id.json
+deployer.json
+
+# Ethereum / Hardhat
+cache/
+artifacts/
+typechain/
+typechain-types/
+
+# Smart contract artifacts (keep ABI, ignore debug files)
+**/*.dbg.json
+**/build-info/
+
+# Deployment files (may contain sensitive addresses)
+deployment-*.json
+deployments/
+.openzeppelin/
+
+# Relayer
+relayer.db
+relayer.db-*
+*.db
+*.db-shm
+*.db-wal
+
+# Environment variables (CRITICAL - never commit secrets)
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
+**/.env
+
+# Logs
+*.log
+logs/
+*.log.*
 
 # IDE / Editor
 .vscode/
@@ -29,6 +80,7 @@ logs/
 *.swo
 *~
 .DS_Store
+*.code-workspace
 
 # Build outputs
 dist/
@@ -36,16 +88,45 @@ build/
 out/
 *.wasm
 *.so
+*.dylib
+*.dll
 
 # Test coverage
 coverage/
 *.lcov
+.nyc_output/
 
 # Temporary files
 tmp/
 temp/
 *.tmp
+*.bak
+*.backup
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Security / Secrets
+secrets/
+private/
+*.pem
+*.p12
+*.pfx
+mnemonic.txt
+seed.txt
+
+# Documentation build
+docs/.build/
+site/
+
+# Python (if used for scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Project-specific
+# Add any project-specific patterns below:

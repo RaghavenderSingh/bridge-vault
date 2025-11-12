@@ -1,0 +1,62 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Source code
+*.rs text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.sol text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# Scripts
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Config files
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.env.example text eol=lf
+Dockerfile text eol=lf
+
+# Binary files
+*.wasm binary
+*.so binary
+*.dylib binary
+*.dll binary
+*.exe binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.pdf binary
+
+# Crypto files
+*.keypair binary
+*.key binary
+*.pem binary
+
+# Exclude files from export
+.gitignore export-ignore
+.gitattributes export-ignore
+.github export-ignore
+.vscode export-ignore
+
+# Linguist overrides (for GitHub language stats)
+*.sol linguist-language=Solidity
+contracts/artifacts/** linguist-generated=true
+contracts/typechain-types/** linguist-generated=true
+contracts/cache/** linguist-generated=true

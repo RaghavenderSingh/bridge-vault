@@ -11,16 +11,18 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 
 # Database
-sqlx = { version = "0.8", features = ["runtime-tokio-native-tls", "sqlite", "migrate"] }
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio-native-tls", "sqlite", "migrate", "chrono", "macros"] }
 
-# Blockchain clients
-solana-client = "=1.17.0"
-solana-sdk = "=1.17.0"
-solana-transaction-status = "=1.17.0"
-anchor-lang = "0.29.0"
+# Blockchain clients (v2.1+ fixes curve25519-dalek/zeroize conflicts)
+solana-client = "~2.1"
+solana-sdk = "~2.1"
+solana-transaction-status = "~2.1"
+anchor-lang = "0.31.0"
+borsh = "1.5"
 
-# Ethereum (commented out to avoid conflicts with Solana - will implement separately)
-# ethers = "2.0"
+# Ethereum - Using alloy for better compatibility
+alloy = { version = "0.6", features = ["full", "node-bindings", "rpc-types-eth", "signer-local"] }
+alloy-sol-types = "0.8"
 
 # Config
 dotenv = "0.15"
@@ -34,6 +36,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Crypto
 secp256k1 = "0.28"
 sha2 = "0.10"
+sha3 = "0.10"
 hex = "0.4"
 
 # Utilities

@@ -26,16 +26,15 @@ async function main() {
 
   // Deploy ValidatorRegistry
   console.log("2️⃣  Deploying ValidatorRegistry...");
-  console.log("⚠️  Using placeholder validator addresses - REPLACE THESE WITH REAL VALIDATORS!");
+  console.log("⚠️  Using single validator for testing - REPLACE WITH REAL VALIDATORS FOR PRODUCTION!");
 
-  // TODO: Replace these with real validator addresses
+  // For testing: using single validator with threshold of 1
+  // TODO: Replace with real validator addresses for production
   const validators = [
-    deployer.address, // Validator 1 (placeholder - replace with real validator)
-    deployer.address, // Validator 2 (placeholder - replace with real validator)
-    deployer.address, // Validator 3 (placeholder - replace with real validator)
+    deployer.address, // Validator 1 (deployer address for testing)
   ];
 
-  const threshold = 2; // 2-of-3 multisig
+  const threshold = 1; // 1-of-1 for testing (use 2-of-3 or higher for production)
 
   console.log("Validators:", validators);
   console.log("Threshold:", threshold);
