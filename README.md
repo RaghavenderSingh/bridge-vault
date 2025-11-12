@@ -97,52 +97,62 @@ bridge-vault/
 ├── app/                # Next.js frontend application
 ├── sdk/                # TypeScript/Rust SDK (planned)
 ├── cli/                # Command-line tools (in development)
-└── docs/               # Documentation
+├── docs/               # Documentation
+├── SETUP.md            # Comprehensive setup guide
+├── CONTRIBUTING.md     # Contribution guidelines
+└── README.md           # This file
 ```
 
 ## Getting Started
 
-### Prerequisites
+For detailed setup instructions, see the [Complete Setup Guide](SETUP.md).
+
+### Quick Start
+
+#### Prerequisites
 
 - Rust 1.70 or higher
 - Solana CLI tools 1.17 or higher
 - Node.js 18 or higher
 - A Solana wallet (Phantom, Solflare, etc.)
 - An Ethereum wallet (MetaMask, etc.)
+- Infura account for Ethereum RPC access
 
-### Building from Source
-
-#### Solana Program
+#### Basic Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/RaghavenderSingh/bridge-vault.git
+cd bridge-vault
+
+# Install dependencies
+npm install
+
+# Build Solana program
 cd programs/bridge-vault
 cargo build-sbf
-```
 
-#### Ethereum Contracts
-
-```bash
-cd contracts
+# Deploy Ethereum contracts
+cd ../../contracts
 npm install
-npx hardhat compile
-```
-
-#### Relayer
-
-```bash
-cd relayer
 cp .env.example .env
-# Edit .env with your configuration
-cargo build --release
-```
+# Edit .env with your Infura key and private key
+npx hardhat compile
+npx hardhat run scripts/deploy.ts --network sepolia
 
-#### Web Application
+# Setup and run relayer
+cd ../relayer
+cp .env.example .env
+# Edit .env with deployed contract addresses
+cargo run --release
 
-```bash
-cd app
+# Run web application
+cd ../app
 npm install
 npm run dev
 ```
+
+For comprehensive instructions including troubleshooting, testing, and configuration details, refer to [SETUP.md](SETUP.md).
 
 ## Testing
 
@@ -189,24 +199,17 @@ Key security features already implemented:
 
 We welcome contributions from the community. Whether you're fixing bugs, improving documentation, or proposing new features, your input is valuable.
 
-### How to Contribute
+For detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### Quick Contribution Guide
 
 1. Fork the repository
-2. Create a new branch for your feature (`git checkout -b feature/amazing-feature`)
+2. Create a new branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes with clear, descriptive commits
 4. Write or update tests as needed
 5. Ensure all tests pass
 6. Push to your branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
-
-### Contribution Guidelines
-
-- Follow the existing code style and conventions
-- Write clear commit messages describing what and why
-- Add tests for new functionality
-- Update documentation for user-facing changes
-- Keep PRs focused on a single feature or fix
-- Be respectful and constructive in discussions
 
 ### Areas Where We Need Help
 
@@ -216,16 +219,7 @@ We welcome contributions from the community. Whether you're fixing bugs, improvi
 - Frontend UI/UX enhancements
 - Integration testing scenarios
 - Performance benchmarking
-
-## Development Workflow
-
-When contributing code:
-
-1. Check existing issues or create a new one describing what you plan to work on
-2. Discuss your approach with maintainers before significant work
-3. Write code following the project's patterns
-4. Test thoroughly on devnet/testnet
-5. Submit PR with detailed description of changes
+- Writing tutorials and guides
 
 ## Community
 
