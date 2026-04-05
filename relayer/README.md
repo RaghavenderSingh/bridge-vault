@@ -150,6 +150,105 @@ Validators should expose an HTTP API with endpoints:
 - `POST /sign-solana` - Sign a message for Solana verification
 - `GET /health` - Health check
 
+## HTTP API
+
+The relayer exposes an HTTP API for querying transaction status and statistics:
+
+### Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check - returns status and version |
+| `/tx/:nonce` | GET | Get transaction details by nonce |
+| `/txs` | GET | List transactions (optional: `?user=<address>` filter) |
+| `/stats` | GET | Transaction statistics |
+
+### Response Formats
+
+**GET /tx/:nonce**
+```json
+{
+  "nonce": 42,
+  "from_chain": "Solana",
+  "to_chain": "Ethereum",
+  "from_tx_hash": "abc123...",
+  "to_tx_hash": "def456...",
+  "sender": "sol_sender_addr",
+  "recipient": "eth_recipient_addr",
+  "amount": 1000000000,
+  "status": "confirmed",
+  "error_message": null
+}
+```
+
+**GET /txs**
+```json
+{
+  "transactions": [
+    {
+      "nonce": 42,
+      "from_chain": "Solana",
+      "to_chain": "Ethereum",
+      "amount": 1000000000,
+      "status": "confirmed"
+    }
+  ],
+  "total": 1
+}
+```
+
+**GET /stats**
+```json
+{
+  "total": 100,
+  "pending": 10,
+  "signatures_collected": 5,
+  "submitted": 20,
+  "confirmed": 60,
+  "failed": 5
+}
+```
+
+### Status Values
+
+Transaction status is returned as lowercase strings:
+- `pending` - Waiting for validator signatures
+- `signaturescollected` - Sufficient signatures obtained
+- `submitted` - Transaction submitted to destination chain
+- `confirmed` - Transaction confirmed on destination chain
+- `failed` - Transaction failed
+
+### Testing
+
+Run the test script to verify all endpoints:
+
+```bash
+# Start the relayer first
+cargo run --release
+
+# In another terminal, run the tests
+./scripts/test_api.sh [PORT]
+```
+
+Or test manually with curl:
+
+```bash
+# Health check
+curl http://localhost:8080/health
+
+# Get transaction by nonce
+curl http://localhost:8080/tx/1
+
+# List all transactions
+curl http://localhost:8080/txs
+
+# Filter by user address
+curl http://localhost:8080/txs?user=sender_address
+
+# Get statistics
+curl http://localhost:8080/stats
+```
+
 ## Monitoring
 
 The relayer logs detailed information about:

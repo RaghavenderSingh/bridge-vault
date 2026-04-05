@@ -1,3 +1,4 @@
+pub mod api;
 mod config;
 mod db;
 mod error;
@@ -82,15 +83,21 @@ async fn main() -> Result<()> {
     info!("  Solana:   {}", config.solana.rpc_url);
     info!("  Ethereum: {}", config.ethereum.rpc_url);
     info!("");
+    info!("API server: http://0.0.0.0:{}", config.relayer.api_port);
+    info!("");
     info!("Press Ctrl+C to stop");
 
     // Clone config for async blocks
     let solana_config = config.solana.clone();
     let ethereum_config = config.ethereum.clone();
     let relayer_config = config.relayer.clone();
+    let api_port = config.relayer.api_port;
     let db_clone1 = db.clone();
     let db_clone2 = db.clone();
     let db_clone3 = db.clone();
+
+    // Create API state
+    let api_state = api::ApiState { db: db_clone1 };
 
     tokio::select! {
         _ = shutdown => {
@@ -99,6 +106,13 @@ async fn main() -> Result<()> {
         result = async {
             // Start all tasks concurrently
             tokio::join!(
+                // HTTP API server
+                async {
+                    info!("Starting HTTP API server on port {}...", api_port);
+                    if let Err(e) = api::start_server(api_state, api_port).await {
+                        error!("API server error: {}", e);
+                    }
+                },
                 // Monitor Solana for TokensLocked events
                 async {
                     info!("Starting Solana monitor task...");

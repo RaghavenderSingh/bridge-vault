@@ -61,7 +61,7 @@ impl BridgeInstruction {
     ) -> Instruction {
         let accounts = vec![
             AccountMeta::new(*admin, true),
-            AccountMeta::new(*bridge_config, false),
+            AccountMeta::new(*bridge_config, true),
             AccountMeta::new_readonly(*vault_pda, false),
             AccountMeta::new_readonly(SYSTEM_PROGRAM_ID, false),
             AccountMeta::new_readonly(sysvar::rent::id(), false),

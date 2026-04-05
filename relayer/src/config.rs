@@ -36,6 +36,7 @@ pub struct RelayerConfig {
     pub max_retries: u32,
     pub retry_delay_ms: u64,
     pub gas_price_multiplier: f64,
+    pub api_port: u16,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -104,6 +105,10 @@ impl Config {
                     .unwrap_or_else(|_| "1.2".to_string())
                     .parse()
                     .unwrap_or(1.2),
+                api_port: std::env::var("API_PORT")
+                    .unwrap_or_else(|_| "8080".to_string())
+                    .parse()
+                    .unwrap_or(8080),
             },
             database: DatabaseConfig {
                 url: std::env::var("DATABASE_URL")

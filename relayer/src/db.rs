@@ -221,6 +221,27 @@ impl Database {
 
         Ok(stats)
     }
+
+    /// List transactions with optional user filter (matches sender OR recipient)
+    pub async fn list_transactions(&self, user: Option<&str>) -> Result<Vec<RelayerTransaction>> {
+        let txs = if let Some(user_addr) = user {
+            sqlx::query_as::<_, RelayerTransaction>(
+                "SELECT * FROM relayer_transactions WHERE sender = ? OR recipient = ? ORDER BY created_at DESC LIMIT 100",
+            )
+            .bind(user_addr)
+            .bind(user_addr)
+            .fetch_all(&self.pool)
+            .await?
+        } else {
+            sqlx::query_as::<_, RelayerTransaction>(
+                "SELECT * FROM relayer_transactions ORDER BY created_at DESC LIMIT 100",
+            )
+            .fetch_all(&self.pool)
+            .await?
+        };
+
+        Ok(txs)
+    }
 }
 
 #[derive(Debug, sqlx::FromRow)]

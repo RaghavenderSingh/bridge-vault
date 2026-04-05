@@ -231,7 +231,7 @@ fn process_lock_tokens(
         return Err(BridgeError::IncorrectOwner.into());
     }
 
-    let mut bridge_config = BridgeConfig::try_from_slice(&bridge_config_account.data.borrow())
+    let mut bridge_config = BridgeConfig::deserialize(&mut &**bridge_config_account.data.borrow())
         .map_err(|_| ProgramError::InvalidAccountData)?;
 
     if bridge_config.is_paused {
@@ -410,7 +410,7 @@ fn process_unlock_tokens(
         return Err(BridgeError::IncorrectOwner.into());
     }
 
-    let mut bridge_config = BridgeConfig::try_from_slice(&bridge_config_account.data.borrow())
+    let mut bridge_config = BridgeConfig::deserialize(&mut &**bridge_config_account.data.borrow())
         .map_err(|_| ProgramError::InvalidAccountData)?;
 
     if relayer_account.key != &bridge_config.relayer_authority {
@@ -428,7 +428,7 @@ fn process_unlock_tokens(
     }
 
     let mut user_bridge_state =
-        UserBridgeState::try_from_slice(&user_bridge_state_account.data.borrow())
+        UserBridgeState::deserialize(&mut &**user_bridge_state_account.data.borrow())
             .map_err(|_| ProgramError::InvalidAccountData)?;
 
     if user_bridge_state.nonce != nonce {
@@ -588,7 +588,7 @@ fn process_update_config(
         return Err(BridgeError::IncorrectOwner.into());
     }
 
-    let mut bridge_config = BridgeConfig::try_from_slice(&bridge_config_account.data.borrow())
+    let mut bridge_config = BridgeConfig::deserialize(&mut &**bridge_config_account.data.borrow())
         .map_err(|_| ProgramError::InvalidAccountData)?;
 
     if admin_account.key != &bridge_config.admin {
@@ -656,7 +656,7 @@ fn process_pause(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult
         return Err(BridgeError::IncorrectOwner.into());
     }
 
-    let mut bridge_config = BridgeConfig::try_from_slice(&bridge_config_account.data.borrow())
+    let mut bridge_config = BridgeConfig::deserialize(&mut &**bridge_config_account.data.borrow())
         .map_err(|_| ProgramError::InvalidAccountData)?;
 
     if admin_account.key != &bridge_config.admin {
@@ -698,7 +698,7 @@ fn process_unpause(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResu
         return Err(BridgeError::IncorrectOwner.into());
     }
 
-    let mut bridge_config = BridgeConfig::try_from_slice(&bridge_config_account.data.borrow())
+    let mut bridge_config = BridgeConfig::deserialize(&mut &**bridge_config_account.data.borrow())
         .map_err(|_| ProgramError::InvalidAccountData)?;
 
     if admin_account.key != &bridge_config.admin {

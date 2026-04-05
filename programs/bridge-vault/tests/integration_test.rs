@@ -1,3 +1,4 @@
+use borsh::BorshDeserialize;
 use bridge_vault::{
     instruction::BridgeInstruction,
     state::{BridgeConfig, BridgeStatus, UserBridgeState},
@@ -10,6 +11,7 @@ use solana_program::{
 };
 use solana_program_test::*;
 use solana_sdk::{
+    account::Account,
     signature::{Keypair, Signer},
     transaction::Transaction,
     transport::TransportError,
@@ -19,15 +21,26 @@ use spl_token;
 #[tokio::test]
 async fn test_initialize() {
     let program_id = Pubkey::new_unique();
+    let admin = Keypair::new();
     let mut program_test = ProgramTest::new(
         "bridge_vault",
         program_id,
         processor!(bridge_vault::process_instruction),
     );
 
-    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
+    // Fund admin account
+    program_test.add_account(
+        admin.pubkey(),
+        solana_sdk::account::Account {
+            lamports: 10_000_000_000,
+            data: vec![],
+            owner: solana_sdk::system_program::ID,
+            executable: false,
+            rent_epoch: 0,
+        },
+    );
 
-    let admin = Keypair::new();
+    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
     let relayer = Keypair::new();
     let bridge_config = Keypair::new();
 
@@ -64,7 +77,8 @@ async fn test_initialize() {
         .expect("Failed to get bridge config account")
         .expect("Bridge config account not found");
 
-    let config = BridgeConfig::try_from_slice(&account.data).unwrap();
+    // Deserialize from a mutable reference to handle variable-length data
+    let config = BridgeConfig::deserialize(&mut account.data.as_slice()).expect("Failed to deserialize BridgeConfig");
     assert_eq!(config.admin, admin.pubkey());
     assert_eq!(config.relayer_authority, relayer.pubkey());
     assert_eq!(config.fee_basis_points, 50);
@@ -77,15 +91,26 @@ async fn test_initialize() {
 #[tokio::test]
 async fn test_pause_and_unpause() {
     let program_id = Pubkey::new_unique();
+    let admin = Keypair::new();
     let mut program_test = ProgramTest::new(
         "bridge_vault",
         program_id,
         processor!(bridge_vault::process_instruction),
     );
 
-    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
+    // Fund admin account
+    program_test.add_account(
+        admin.pubkey(),
+        solana_sdk::account::Account {
+            lamports: 10_000_000_000,
+            data: vec![],
+            owner: solana_sdk::system_program::ID,
+            executable: false,
+            rent_epoch: 0,
+        },
+    );
 
-    let admin = Keypair::new();
+    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
     let relayer = Keypair::new();
     let bridge_config = Keypair::new();
     let validators = vec![Keypair::new().pubkey()];
@@ -126,7 +151,7 @@ async fn test_pause_and_unpause() {
         .unwrap()
         .unwrap();
 
-    let config = BridgeConfig::try_from_slice(&account.data).unwrap();
+    let config = BridgeConfig::deserialize(&mut account.data.as_slice()).expect("Failed to deserialize BridgeConfig");
     assert!(config.is_paused);
 
     let unpause_ix = BridgeInstruction::create_unpause_instruction(
@@ -145,22 +170,33 @@ async fn test_pause_and_unpause() {
         .unwrap()
         .unwrap();
 
-    let config = BridgeConfig::try_from_slice(&account.data).unwrap();
+    let config = BridgeConfig::deserialize(&mut account.data.as_slice()).expect("Failed to deserialize BridgeConfig");
     assert!(!config.is_paused);
 }
 
 #[tokio::test]
 async fn test_update_config() {
     let program_id = Pubkey::new_unique();
+    let admin = Keypair::new();
     let mut program_test = ProgramTest::new(
         "bridge_vault",
         program_id,
         processor!(bridge_vault::process_instruction),
     );
 
-    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
+    // Fund admin account
+    program_test.add_account(
+        admin.pubkey(),
+        solana_sdk::account::Account {
+            lamports: 10_000_000_000,
+            data: vec![],
+            owner: solana_sdk::system_program::ID,
+            executable: false,
+            rent_epoch: 0,
+        },
+    );
 
-    let admin = Keypair::new();
+    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
     let new_admin = Keypair::new();
     let relayer = Keypair::new();
     let new_relayer = Keypair::new();
@@ -206,7 +242,7 @@ async fn test_update_config() {
         .unwrap()
         .unwrap();
 
-    let config = BridgeConfig::try_from_slice(&account.data).unwrap();
+    let config = BridgeConfig::deserialize(&mut account.data.as_slice()).expect("Failed to deserialize BridgeConfig");
     assert_eq!(config.admin, new_admin.pubkey());
     assert_eq!(config.relayer_authority, new_relayer.pubkey());
     assert_eq!(config.fee_basis_points, 100);
@@ -215,15 +251,26 @@ async fn test_update_config() {
 #[tokio::test]
 async fn test_invalid_fee_initialization() {
     let program_id = Pubkey::new_unique();
+    let admin = Keypair::new();
     let mut program_test = ProgramTest::new(
         "bridge_vault",
         program_id,
         processor!(bridge_vault::process_instruction),
     );
 
-    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
+    // Fund admin account
+    program_test.add_account(
+        admin.pubkey(),
+        solana_sdk::account::Account {
+            lamports: 10_000_000_000,
+            data: vec![],
+            owner: solana_sdk::system_program::ID,
+            executable: false,
+            rent_epoch: 0,
+        },
+    );
 
-    let admin = Keypair::new();
+    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
     let relayer = Keypair::new();
     let bridge_config = Keypair::new();
     let validators = vec![Keypair::new().pubkey()];
@@ -254,15 +301,26 @@ async fn test_invalid_fee_initialization() {
 #[tokio::test]
 async fn test_invalid_validator_threshold() {
     let program_id = Pubkey::new_unique();
+    let admin = Keypair::new();
     let mut program_test = ProgramTest::new(
         "bridge_vault",
         program_id,
         processor!(bridge_vault::process_instruction),
     );
 
-    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
+    // Fund admin account
+    program_test.add_account(
+        admin.pubkey(),
+        solana_sdk::account::Account {
+            lamports: 10_000_000_000,
+            data: vec![],
+            owner: solana_sdk::system_program::ID,
+            executable: false,
+            rent_epoch: 0,
+        },
+    );
 
-    let admin = Keypair::new();
+    let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
     let relayer = Keypair::new();
     let bridge_config = Keypair::new();
     let validators = vec![Keypair::new().pubkey(), Keypair::new().pubkey()];
